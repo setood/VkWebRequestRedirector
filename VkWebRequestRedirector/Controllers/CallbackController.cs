@@ -39,35 +39,39 @@ namespace VkWebRequestRedirector.Controllers
                 return Ok(_configuration["Config:Confirmation"]);
             }
             ///////////////////////
-            var api = new VkApi();
-            api.Authorize(new ApiAuthParams {AccessToken = _configuration["Config:AccessToken"]});
-            var msg = Message.FromJson(new VkResponse(updates.Object));
-            var keyboard = new KeyboardBuilder()
-                .AddButton("Подтвердить", "btnValue", KeyboardButtonColor.Primary)
-                .SetInline(false)
-                .AddLine()
-                .AddButton("Отменить", "btnValue", KeyboardButtonColor.Primary)
-                .Build();
-            api.Messages.Send(new MessagesSendParams{ 
-                RandomId = new DateTime().Millisecond,
-                PeerId = msg.PeerId.Value,
-                Message = "redir",
-                Keyboard = keyboard
-            });
+            //var api = new VkApi();
+            //api.Authorize(new ApiAuthParams {AccessToken = _configuration["Config:AccessToken"]});
+            //var msg = Message.FromJson(new VkResponse(updates.Object));
+            //var keyboard = new KeyboardBuilder()
+            //    .AddButton("Подтвердить", "btnValue", KeyboardButtonColor.Primary)
+            //    .SetInline(false)
+            //    .AddLine()
+            //    .AddButton("Отменить", "btnValue", KeyboardButtonColor.Primary)
+            //    .Build();
+            //api.Messages.Send(new MessagesSendParams{ 
+            //    RandomId = new DateTime().Millisecond,
+            //    PeerId = msg.PeerId.Value,
+            //    Message = "redir",
+            //    Keyboard = keyboard
+            //});
             ////////////////
             string url = Environment.GetEnvironmentVariable("RederectURI");
+            //if (url == null)
+            //{
+            //    url = "https://94.251.40.53/test1/api/Callback";
+            //}
             var httpWebRequest = (HttpWebRequest) WebRequest.Create(url);
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.Method = "POST";
-
+            httpWebRequest.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
             using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
                 string json = updatesObj.ToString();
 
                 streamWriter.Write(json);
             }
-
             var httpResponse = (HttpWebResponse) await httpWebRequest.GetResponseAsync();
+
             return Ok("ok");
         }
     }
